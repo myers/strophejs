@@ -1401,7 +1401,9 @@ Strophe.Connection = function (service)
     /* The current session ID. */
     this.sid = null;
     this.streamId = null;
-
+    
+    this.requestLog = {};
+    
     // SASL
     this.do_session = false;
     this.do_bind = false;
@@ -1455,6 +1457,58 @@ Strophe.Connection = function (service)
 };
 
 Strophe.Connection.prototype = {
+    _logRequest: function(req, status) {
+      var entry = {
+        requestId: req.id,
+        boshRid: req.rid,
+        startDate: req.date,
+        aborted: req.abort
+      };
+      if (status) {
+        entry['status'] = status;
+        entry['age'] = req.age();
+        entry['hostname'] = req.xhr.getResponseHeader('X-Hostname');
+        entry['responseDate'] = req.xhr.getResponseHeader('Date');
+      }
+      this.requestLog[req.id] = entry;
+    },
+    
+    /** Function: recentRequests
+     *  Return information about the last N number of requests.
+     *  
+     *  Parameters:
+     *    (Number) numberOfRequests - number of requests you want to know about
+     *
+     *  Returns:
+     *    An array of Objects with information about the last N number of request.
+     */
+    recentRequests: function(numberOfRequests) {
+      numberOfRequests = typeof(numberOfRequests) != 'undefined' ? numberOfRequests : 5;
+      var requests = [];
+      for (var property in this.requestLog)
+        requests.push(this.requestLog[property]);
+      requests.sort(function(aa, bb) {
+        if (aa.startDate == bb.startDate) {
+          return 0;
+        } else if (aa.startDate > bb.startDate) {
+          return 1;
+        } 
+        return -1;
+      });
+      return requests.slice(-num);
+    },
+    
+    /** Function: idleLoopSlow
+     *  Return a list of recent times the idle loop did not run at the right time.
+     *  
+     *  Returns:
+     *    An array of Objects with information about the times the idle loop was not able to run.
+     */
+    
+    idleLoopSlow: function() { 
+      return this._idleLoopSlow; 
+    },
+    
     /** Function: reset
      *  Reset the connection.
      *
@@ -1582,6 +1636,10 @@ Strophe.Connection.prototype = {
         this.authenticated = false;
         this.errors = 0;
 
+        // BEGIN DEBUGGING idle loop slow 
+        this._idleLoopSlow = [];
+        // END DEBUGGING idle loop slow 
+        
         this.wait = wait || this.wait;
         this.hold = hold || this.hold;
 
@@ -2145,6 +2203,7 @@ Strophe.Connection.prototype = {
             // setting to null fails on IE6, so set to empty function
             req.xhr.onreadystatechange = function () {};
 
+            this._logRequest(req);
             if (req.age() > this.wait + this.inactivity) {
               this._doDisconnect('inactivity');
               return;
@@ -2161,6 +2220,7 @@ Strophe.Connection.prototype = {
                           "." + req.sends + " posting");
 
             req.date = new Date();
+            this._logRequest(req);
             try {
                 req.xhr.open("POST", this.service, true);
             } catch (e2) {
@@ -2271,6 +2331,8 @@ Strophe.Connection.prototype = {
             if (typeof(reqStatus) == "undefined") {
                 reqStatus = 0;
             }
+
+            this._logRequest(req, reqStatus);
 
             if (this.disconnecting) {
                 if (reqStatus >= 400) {
@@ -3100,6 +3162,22 @@ Strophe.Connection.prototype = {
     _onIdle: function ()
     {
         var i, thand, since, newList;
+        
+        // BEGIN DEBUGGING idle loop slow 
+        var currentTime = (new Date()).valueOf();
+        if (typeof(this.lastTimeInOnIdle) !== "undefined") {
+          if ((this.lastTimeInOnIdle + 1500) < currentTime) {
+            this._idleLoopSlow.push({
+              delayDetectedAt: currentTime, 
+              delayedFor: currentTime - this.lastTimeInOnIdle
+            });
+          }
+          while (this._idleLoopSlow.length > 20) {
+            this._idleLoopSlow.shift();
+          }
+        }
+        this.lastTimeInOnIdle = currentTime;
+        // END DEBUGGING idle loop slow 
 
         // remove timed handlers that have been scheduled for deletion
         while (this.removeTimeds.length > 0) {
