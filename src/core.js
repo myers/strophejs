@@ -488,7 +488,7 @@ Strophe = {
     xmlTextNode: function (text)
     {
 	//ensure text is escaped
-	text = Strophe.xmlescape(text);
+	text = Strophe.xmlescape(text.toString());
 
         if (!Strophe._xmlGenerator) {
             Strophe._xmlGenerator = Strophe._makeGenerator();
