@@ -1540,6 +1540,7 @@ Strophe.Connection.prototype = {
 
         this.errors = 0;
 
+        this._data = [];
         this._requests = [];
         this._uniqueId = Math.round(Math.random()*10000);
     },
