@@ -2381,7 +2381,7 @@ Strophe.Connection.prototype = {
                     this._hitError(reqStatus);
                     if (reqStatus >= 400 && reqStatus < 500) {
                         this._changeConnectStatus(Strophe.Status.DISCONNECTING,
-                                                  null);
+                                              'Got HTTP Error code: ' + reqStatus);
                         this._doDisconnect();
                     }
                 }
