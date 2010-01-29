@@ -2144,6 +2144,11 @@ Strophe.Connection.prototype = {
             req.xhr.abort();
             // setting to null fails on IE6, so set to empty function
             req.xhr.onreadystatechange = function () {};
+
+            if (req.age() > this.wait + this.inactivity) {
+              this._doDisconnect('inactivity');
+              return;
+            }
             this._requests[i] = new Strophe.Request(req.xmlData,
                                                     req.origFunc,
                                                     req.rid,
@@ -2352,7 +2357,7 @@ Strophe.Connection.prototype = {
      *  This is the last piece of the disconnection logic.  This resets the
      *  connection and alerts the user's connection callback.
      */
-    _doDisconnect: function ()
+    _doDisconnect: function (reason)
     {
         Strophe.info("_doDisconnect was called");
         this.authenticated = false;
@@ -2363,7 +2368,7 @@ Strophe.Connection.prototype = {
 
         // tell the parent we disconnected
         if (this.connected) {
-            this._changeConnectStatus(Strophe.Status.DISCONNECTED, null);
+            this._changeConnectStatus(Strophe.Status.DISCONNECTED, reason);
             this.connected = false;
         }
 
@@ -2541,6 +2546,8 @@ Strophe.Connection.prototype = {
         if (!this.stream_id) {
             this.stream_id = bodyWrap.getAttribute("authid");
         }
+        var inactivity = bodyWrap.getAttribute("inactivity");
+        if (inactivity) { this.inactivity = parseInt(inactivity, 10); }
         var wind = bodyWrap.getAttribute('requests');
         if (wind) { this.window = parseInt(wind, 10); }
         var hold = bodyWrap.getAttribute('hold');
