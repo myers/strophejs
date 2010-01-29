@@ -337,6 +337,20 @@ Strophe = {
         }
     },
 
+    /** Function: childElements
+     *  Return the childNodes that are Elements
+     *
+     *  Parameters:
+     *  (XMLElement) elem - The element to operate on.
+     */
+    childElements: function(elem) {
+      var ret = [];
+      Strophe.forEachChild(elem, null, function(elem) {
+        ret.push(elem);
+      });
+      return ret;
+    },
+
     /** Function: isTagEqual
      *  Compare an element's tag name with a string.
      *
