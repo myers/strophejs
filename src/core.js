@@ -1445,6 +1445,10 @@ Strophe.Connection = function (service)
     this._sasl_failure_handler = null;
     this._sasl_challenge_handler = null;
 
+    // BEGIN DEBUGGING idle loop slow 
+    this._idleLoopSlow = [];
+    // END DEBUGGING idle loop slow 
+
     // setup onIdle callback every 1/10th of a second
     this._idleTimeout = setTimeout(this._onIdle.bind(this), 100);
 
