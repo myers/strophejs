@@ -222,6 +222,10 @@ Strophe = {
         STANZAS: "urn:ietf:params:xml:ns:xmpp-stanzas"
     },
 
+    /* we can set this var to another window object, perhaps from an iframe */
+    connectionWindow: window,
+    
+
     /** Function: addNamespace 
      *  This function is used to extend the current namespaces in
      *	Strophe.NS.  It takes a key and a value with the key being the
@@ -1344,13 +1348,14 @@ Strophe.Request.prototype = {
     _newXHR: function ()
     {
         var xhr = null;
+        var window = Strophe.connectionWindow;
         if (window.XMLHttpRequest) {
-            xhr = new XMLHttpRequest();
+            xhr = new window.XMLHttpRequest();
             if (xhr.overrideMimeType) {
                 xhr.overrideMimeType("text/xml");
             }
         } else if (window.ActiveXObject) {
-            xhr = new ActiveXObject("Microsoft.XMLHTTP");
+            xhr = new window.ActiveXObject("Microsoft.XMLHTTP");
         }
 
         xhr.onreadystatechange = this.func.prependArg(this);
