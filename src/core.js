@@ -1504,7 +1504,7 @@ Strophe.Connection.prototype = {
         } 
         return -1;
       });
-      return requests.slice(-num);
+      return requests.slice(-numberOfRequests);
     },
     
     /** Function: idleLoopSlow
