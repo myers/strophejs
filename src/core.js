@@ -1348,14 +1348,14 @@ Strophe.Request.prototype = {
     _newXHR: function ()
     {
         var xhr = null;
-        var window = Strophe.connectionWindow;
-        if (window.XMLHttpRequest) {
-            xhr = new window.XMLHttpRequest();
+        var win = Strophe.connectionWindow;
+        if (win.XMLHttpRequest) {
+            xhr = new win.XMLHttpRequest();
             if (xhr.overrideMimeType) {
                 xhr.overrideMimeType("text/xml");
             }
-        } else if (window.ActiveXObject) {
-            xhr = new window.ActiveXObject("Microsoft.XMLHTTP");
+        } else if (win.ActiveXObject) {
+            xhr = new win.ActiveXObject("Microsoft.XMLHTTP");
         }
 
         xhr.onreadystatechange = this.func.prependArg(this);
