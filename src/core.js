@@ -2625,9 +2625,10 @@ Strophe.Connection.prototype = {
         var do_sasl_digest_md5 = false;
         var do_sasl_anonymous = false;
 
+        var streamFeatures = bodyWrap.getElementsByTagName("stream:features");
         var mechanisms = bodyWrap.getElementsByTagName("mechanism");
         var i, mech, auth_str, hashed_auth_str;
-        if (mechanisms.length > 0) {
+        if (streamFeatures.length > 0) {
             for (i = 0; i < mechanisms.length; i++) {
                 mech = Strophe.getText(mechanisms[i]);
                 if (mech == 'DIGEST-MD5') {
